@@ -40,7 +40,7 @@ public class SortRank extends Configured {
 			Text newkey = new Text(String.valueOf(thekey));
 			//value.set(line);
 			//System.out.println(numOutput);
-                        if(numOutput < 10) { //Number of displayed records
+                        if(numOutput < 100) { //Number of displayed records
 			output.collect(newkey, values.next());
 			numOutput++;
 			} else {

@@ -51,7 +51,7 @@ public class PageRank extends Configured implements Tool {
                 FileSystem fs;// = FileSystem.get(conf);
                 //Path inpath = new Path(" ");
                 //Path outpath = new Path(" ");
-                int numIter = 8;
+                int numIter = 2;
                 
                 for(int i = 1; i<=numIter; i++){
                         iterInPath = (i == 1) ? graphPath : (new Path("outputOfThe"+String.valueOf(i-1)));
@@ -70,22 +70,22 @@ public class PageRank extends Configured implements Tool {
 	        	JobClient.runJob(conf);
 	        	fs = FileSystem.get(conf);
 	        	if(i!=1) {
-	        	        fs.delete(new Path("outputOfThe"+String.valueOf(i-1)),true);
+	        	        //fs.delete(new Path("outputOfThe"+String.valueOf(i-1)),true);
 	        	}
                 }
                 
-                //conf = new JobConf(SortRank.class);
-                //conf.setJobName("SortRank");
-		//conf.setMapperClass(SortRank.Map.class);
-		//conf.setReducerClass(SortRank.Reduce.class);
-		//conf.setOutputKeyClass(Text.class);
-		//conf.setOutputValueClass(Text.class);
-		//conf.setInputFormat(TextInputFormat.class);
-		//conf.setOutputFormat(TextOutputFormat.class);
-		//FileInputFormat.setInputPaths(conf, new Path("outputOfThe"+String.valueOf(numIter)));
-	        //FileOutputFormat.setOutputPath(conf, new Path(args[1]));
-	        //JobClient.runJob(conf);
-	        //fs = FileSystem.get(conf);
+                conf = new JobConf(SortRank.class);
+                conf.setJobName("SortRank");
+		conf.setMapperClass(SortRank.Map.class);
+		conf.setReducerClass(SortRank.Reduce.class);
+		conf.setOutputKeyClass(Text.class);
+		conf.setOutputValueClass(Text.class);
+		conf.setInputFormat(TextInputFormat.class);
+		conf.setOutputFormat(TextOutputFormat.class);
+		FileInputFormat.setInputPaths(conf, new Path("outputOfThe"+String.valueOf(numIter)));
+	        FileOutputFormat.setOutputPath(conf, new Path(args[1]+"-Final"));
+	        JobClient.runJob(conf);
+	        fs = FileSystem.get(conf);
 	        //fs.delete(new Path("outputOfThe"+String.valueOf(numIter)),true);
 	        		
 		return 0;
