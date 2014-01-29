@@ -84,6 +84,7 @@ public class PageRank extends Configured implements Tool {
 		conf.setOutputValueClass(Text.class);
 		conf.setInputFormat(TextInputFormat.class);
 		conf.setOutputFormat(TextOutputFormat.class);
+		conf.setInt("n.count",N ); // Use N Count
 		FileInputFormat.setInputPaths(conf, new Path("outputOfIter-"+String.valueOf(numIter)));
 	        FileOutputFormat.setOutputPath(conf, new Path(args[1]+"-Final-Sorted"));
 	        JobClient.runJob(conf);

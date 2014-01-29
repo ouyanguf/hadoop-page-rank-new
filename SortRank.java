@@ -31,7 +31,12 @@ public class SortRank extends Configured {
 	public static class Reduce extends MapReduceBase implements Reducer<Text, Text, Text, Text> {
 
                 private int numOutput = 0;
-                //private Text empty = new Text();
+                private int nCount;
+                
+                public void configure(JobConf job) {
+		        nCount = job.getInt("n.count", 1);
+		}
+		
 		public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, Text> output, Reporter reporter)
 			throws IOException {
 			while (values.hasNext()) {
@@ -40,7 +45,7 @@ public class SortRank extends Configured {
 			Text newkey = new Text(String.valueOf(thekey));
 			//value.set(line);
 			//System.out.println(numOutput);
-                        if(numOutput < 100) { //Number of displayed records
+                        if(numOutput >= 5/nCount) { //Number of displayed records
 			output.collect(values.next(),newkey);
 			numOutput++;
 			} else {
