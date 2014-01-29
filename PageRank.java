@@ -54,6 +54,7 @@ public class PageRank extends Configured implements Tool {
 		int N = Integer.valueOf(nStr);
                 int numIter = 3;
                 
+                
                 for(int i = 1; i<=numIter; i++){
                         iterInPath = (i == 1) ? graphPath : (new Path("outputOfIter-"+String.valueOf(i-1)));
                         iterOutPath = new Path("outputOfIter-"+String.valueOf(i));
@@ -67,7 +68,7 @@ public class PageRank extends Configured implements Tool {
 		        conf.setOutputFormat(TextOutputFormat.class);
 		        conf.setInt("n.count",N ); // Use N Count
 		        FileInputFormat.setInputPaths(conf, iterInPath);
-	        	FileOutputFormat.setOutputPath(conf, iterOutPath);
+	                FileOutputFormat.setOutputPath(conf, iterOutPath);
 	        	JobClient.runJob(conf);
 	        	fs = FileSystem.get(conf);
 	        	if(i>2) {

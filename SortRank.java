@@ -41,7 +41,7 @@ public class SortRank extends Configured {
 			//value.set(line);
 			//System.out.println(numOutput);
                         if(numOutput < 100) { //Number of displayed records
-			output.collect(newkey, values.next());
+			output.collect(values.next(),newkey);
 			numOutput++;
 			} else {
 			values.next();

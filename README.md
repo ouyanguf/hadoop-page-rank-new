@@ -1,2 +1,3 @@
-hadoop-page-rank-new
+Page Rank
 ====================
+By OU Yang & HAN Yahui
