@@ -23,7 +23,7 @@ public class CountPages extends Configured {
 		public void map(LongWritable key, Text value, OutputCollector<Text, Text> output, Reporter reporter)
 		        throws IOException {
 
-			outputKey.set("Number of Nodes:");
+			outputKey.set("N");
 			//outputValue.set(String.valueOf(degree));
 			output.collect(outputKey, value);
 		}
@@ -31,7 +31,7 @@ public class CountPages extends Configured {
 
 	public static class Reduce extends MapReduceBase implements Reducer<Text, Text, Text, Text> {
 
-		private Text outputValue = new Text();
+		
 		private int numNodes = 0;
 
 		public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, Text> output, Reporter reporter)
@@ -41,9 +41,10 @@ public class CountPages extends Configured {
 				numNodes++;
 				values.next();	
 			}
-                                Text out = new Text();
-                                out.set(String.valueOf(numNodes));
-                                output.collect(key, out);
+                                Text outKey = new Text();
+                                outKey.set("N="+ String.valueOf(numNodes));
+                                Text empty = new Text();
+                                output.collect(outKey, empty);
 		}
 	}
 }

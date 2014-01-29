@@ -91,7 +91,12 @@ public class Rank extends Configured{
 	public static class Reduce extends MapReduceBase implements Reducer<Text, Text, Text, Text> {
 
 		private double factor = 0.85;
+		private int nCount = 1;
 		private Text outputValue = new Text();
+		
+		public void configure(JobConf job) {
+		        nCount = job.getInt("n.count", 1);
+		}
 		
 		public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, Text> output, Reporter reporter)
 			throws IOException {
@@ -113,7 +118,7 @@ public class Rank extends Configured{
 					}
 				}
 			}
-			sum = factor * sum + 1 - factor;
+			sum = factor * sum + (1 - factor) / nCount;
 			sum = Math.round(sum * 10000.0) / 10000.0;
 			outputValue.set(String.valueOf(sum) + " " + outlinks);
 			output.collect(key, outputValue);
