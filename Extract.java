@@ -1,3 +1,7 @@
+/**
+ * @author: OU Yang & HAN Yahui
+ */
+
 package PageRank;
 
 import java.io.*;
@@ -27,32 +31,30 @@ public class Extract extends Configured{
 
 		private String getOutlinks(String page){
 			StringBuilder outlinks = new StringBuilder();
-			StringBuilder text = new StringBuilder(page);
-			int textStart = text.indexOf("<text");
-			text.delete(0,textStart);
-			int textEnd = text.indexOf("</text>");
-			text.delete(textEnd+7,text.capacity());
+			//StringBuilder text = new StringBuilder(page);
+			int textStart = page.indexOf("<text")+6;
+			//text.delete(0,textStart);
+			int textEnd = page.indexOf("</text>");
+			//text.delete(textEnd,text.capacity());
 				
-			while(text.indexOf("[[")!=-1){
-				int linkStart = text.indexOf("[[")+2;
-				int linkEnd = text.indexOf("]]",linkStart);
-				int colonIndex = text.indexOf(":",linkStart);
-				if(colonIndex<linkEnd && colonIndex!=-1){
-					text.delete(0,linkEnd+2);
-				}else{
-					int pipeIndex = text.indexOf("|",linkStart);
-					if(pipeIndex<linkEnd && pipeIndex!=-1){
-						linkEnd = pipeIndex;
-					}
-					int sharpIndex = text.indexOf("#",linkStart);
-					if(sharpIndex<linkEnd && sharpIndex!=-1){
-					        linkEnd = sharpIndex;
-					}
-					outlinks.append(" "+ text.substring(linkStart,linkEnd).replace(' ','_'));
-					text.delete(0,linkEnd+2);
-				}
-			}
+			while(textStart<textEnd){ //text.indexOf("[[")!=-1){
+				int linkStart = page.indexOf("[[",textStart)+2;
+				int linkEnd = page.indexOf("]]",linkStart);
+				
+				textStart = linkEnd + 2;//Update text start
+				
+				if(linkStart == 1 || linkEnd == -1) break; //No [[ or ]] found
+				
+				if(linkStart == linkEnd) continue;//no content between [[ and ]]
 
+				String link = page.substring(linkStart,linkEnd); //One link
+				if(link.contains(":") || link.contains("#"))	continue; //exclude invalid link
+				
+				int pipeIndex = link.indexOf("|");
+				if(pipeIndex == 0) continue;//no content before |
+				else if(pipeIndex != -1) link = link.substring(0,pipeIndex);//have pipe in the link
+				outlinks.append(" " + link.replace(" ","_"));//append to string builder
+			}
 			return outlinks.toString();
 		}
 
