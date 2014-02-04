@@ -31,13 +31,11 @@ public class Extract extends Configured{
 
 		private String getOutlinks(String page){
 			StringBuilder outlinks = new StringBuilder();
-			//StringBuilder text = new StringBuilder(page);
+			HashSet<String> set = new HashSet<String>();
 			int textStart = page.indexOf("<text")+6;
-			//text.delete(0,textStart);
 			int textEnd = page.indexOf("</text>");
-			//text.delete(textEnd,text.capacity());
 				
-			while(textStart<textEnd){ //text.indexOf("[[")!=-1){
+			while(textStart<textEnd){
 				int linkStart = page.indexOf("[[",textStart)+2;
 				int linkEnd = page.indexOf("]]",linkStart);
 				
@@ -53,7 +51,11 @@ public class Extract extends Configured{
 				int pipeIndex = link.indexOf("|");
 				if(pipeIndex == 0) continue;//no content before |
 				else if(pipeIndex != -1) link = link.substring(0,pipeIndex);//have pipe in the link
-				outlinks.append(" " + link.replace(" ","_"));//append to string builder
+				set.add(link.replace(" ","_"));
+			}
+			Iterator<String> it = set.iterator();
+			while(it.hasNext()){
+				outlinks.append(" " + it.next());
 			}
 			return outlinks.toString();
 		}
