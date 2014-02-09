@@ -66,7 +66,7 @@ public class Extract extends Configured{
 			String title = getTitle(page);
 			String outlinks = getOutlinks(page);
                         outputKey.set(title);
-                        outputValue.set("1"+ outlinks);
+                        outputValue.set("0.1"+outlinks);
                         output.collect(outputKey, outputValue);
 		}
 	}

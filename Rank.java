@@ -21,7 +21,12 @@ public class Rank extends Configured{
 		private Text thisLink = new Text();
 		private double rank = 0.0;
 		private int degree = 0;
+		private int nCount = 1;
 
+		public void configure(JobConf job) {
+		        nCount = job.getInt("n.count", 1);
+		}
+		
 		public void map(LongWritable key, Text value, OutputCollector<Text, Text> output, Reporter reporter)
 		        throws IOException {
 				
@@ -30,7 +35,7 @@ public class Rank extends Configured{
 
 			thisLink.set(parts[0]);
 			if (parts.length >= 2) {
-				if (parts[1].length() < 10) { // A rank b c...
+				if (parts[1].charAt(0)=='0'&&parts[1].charAt(1)=='.') { // A rank b c...
 					rank = Double.valueOf(parts[1]);
 					degree = parts.length - 2;
 
@@ -55,7 +60,7 @@ public class Rank extends Configured{
 						}
 					}
 				} else { // A (no rank) b c ...
-					rank = 1.0;
+					rank = 1.0/nCount;
 					degree = parts.length - 1;
 
 					StringBuilder builder = new StringBuilder();
@@ -78,7 +83,7 @@ public class Rank extends Configured{
 					}
 				}
 			} else {// only A
-				rank = 1.0;
+				rank = 1.0/nCount;
 				degree = parts.length - 1;
 
 				outputValue.set("info 0");
@@ -119,7 +124,7 @@ public class Rank extends Configured{
 				}
 			}
 			sum = factor * sum + (1 - factor) / nCount;
-			sum = Math.round(sum * 10000.0) / 10000.0;
+			sum = Math.round(sum * 100000.0) / 100000.0;
 			outputValue.set(String.valueOf(sum) + " " + outlinks);
 			output.collect(key, outputValue);
 		}

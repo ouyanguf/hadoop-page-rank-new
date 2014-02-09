@@ -13,16 +13,16 @@ import org.apache.hadoop.util.*;
 public class PageRank extends Configured implements Tool {	
 	
 	public int run(String[] args) throws Exception {
-                
-                Path inPath = new Path(args[0]);
-                Path outPath = new Path(args[1]);
-                Path graphPath = new Path(args[1] + "-Graph");
+			               
+            Path inPath = new Path(args[0]);
+            Path outPath = new Path(args[1]);
+            Path graphPath = new Path(args[1] + "-Graph");
 	        Path countPath = new Path(args[1] + "-Count-N"); 
 	        Path iterInPath;// = new Path(" ");
 	        Path iterOutPath;// = new Path(" ");
                 
-                JobConf conf = new JobConf(Extract.class);
-                conf.setJobName("ExtractInfo");
+            JobConf conf = new JobConf(Extract.class);
+            conf.setJobName("ExtractInfo");
 	        conf.setMapperClass(Extract.Map.class);
 	        conf.setReducerClass(Extract.Reduce.class);
 	        conf.setOutputKeyClass(Text.class);
@@ -35,8 +35,8 @@ public class PageRank extends Configured implements Tool {
         	FileOutputFormat.setOutputPath(conf, graphPath);
         	JobClient.runJob(conf);
 
-                conf = new JobConf(CountPages.class);                
-                conf.setJobName("CountPages");
+            conf = new JobConf(CountPages.class);                
+            conf.setJobName("CountPages");
 	        conf.setMapperClass(CountPages.Map.class);
 	        conf.setReducerClass(CountPages.Reduce.class);
 	        conf.setOutputKeyClass(Text.class);
