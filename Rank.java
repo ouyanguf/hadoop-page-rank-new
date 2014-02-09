@@ -30,66 +30,35 @@ public class Rank extends Configured{
 		public void map(LongWritable key, Text value, OutputCollector<Text, Text> output, Reporter reporter)
 		        throws IOException {
 				
-			String line = value.toString();
+			String line = value.toString(); // A Rank B C ...
 			String[] parts = line.split("[ \t]");
 
-			thisLink.set(parts[0]);
-			if (parts.length >= 2) {
-				if (parts[1].charAt(0)=='0'&&parts[1].charAt(1)=='.') { // A rank b c...
-					rank = Double.valueOf(parts[1]);
-					degree = parts.length - 2;
+			thisLink.set(parts[0]); // Extract A
+			
+			rank = Double.valueOf(parts[1]); // Extract Rank
+			
+			degree = parts.length - 2; // Calculate Degree
 
-					StringBuilder builder = new StringBuilder();
-					if (parts.length >= 3) {
-						for (int i = 2; i < parts.length; i++) {
-							builder.append(parts[i] + " ");
-						}
-					}
-					outputValue.set("info " + String.valueOf(degree) + " "
-							+ builder.toString());
-					output.collect(thisLink, outputValue);
-
-					outputValue.set(thisLink.toString() + " "
-							+ String.valueOf(rank) + " "
-							+ String.valueOf(degree));
-					if (parts.length >= 3) {
-						for (int i = 2; i < parts.length; i++) {
-							outputKey.set(parts[i]);
-							output.collect(outputKey, outputValue);
-							reporter.incrCounter(Counters.INPUT_WORDS, 1);
-						}
-					}
-				} else { // A (no rank) b c ...
-					rank = 1.0/nCount;
-					degree = parts.length - 1;
-
-					StringBuilder builder = new StringBuilder();
-					if (parts.length >= 2) {
-						for (int i = 1; i < parts.length; i++) {
-							builder.append(parts[i] + " ");
-						}
-					}
-					outputValue.set("info " + String.valueOf(degree) + " "
-							+ builder.toString());
-					output.collect(thisLink, outputValue);
-
-					outputValue.set(thisLink.toString() + " "
-							+ String.valueOf(rank) + " "
-							+ String.valueOf(degree));
-					for (int i = 1; i < parts.length; i++) {
-						outputKey.set(parts[i]);
-						output.collect(outputKey, outputValue);
-						reporter.incrCounter(Counters.INPUT_WORDS, 1);
-					}
+			StringBuilder builder = new StringBuilder();
+			if (parts.length > 2) {
+			        for (int i = 2; i < parts.length; i++) {
+					builder.append(parts[i] + "\t");
 				}
-			} else {// only A
-				rank = 1.0/nCount;
-				degree = parts.length - 1;
-
-				outputValue.set("info 0");
-				output.collect(thisLink, outputValue);
 			}
+			outputValue.set("!@#info#@!\t" + String.valueOf(degree) + "\t"
+					+ builder.toString());
+			output.collect(thisLink, outputValue);
 
+			outputValue.set(thisLink.toString() + "\t"
+					+ String.valueOf(rank) + "\t"
+					+ String.valueOf(degree));
+			if (parts.length > 2) {
+				for (int i = 2; i < parts.length; i++) {
+					outputKey.set(parts[i]);
+					output.collect(outputKey, outputValue);
+					reporter.incrCounter(Counters.INPUT_WORDS, 1);
+				}
+			}
 		}
 	}
 
@@ -113,19 +82,19 @@ public class Rank extends Configured{
 				String line = values.next().toString();
 				String[] parts = line.split("[ \t]");
 
-				if (!parts[0].equals("info")) {//Not info message
+				if (!parts[0].equals("!@#info#@!")) {//Not info message
 					sum += Double.valueOf(parts[1]) / Double.valueOf(parts[2]);
-				} else {
+				} else { // Info message
 					if (parts.length > 2) {
 						for (int i = 2; i < parts.length; i++) {
-							outlinks = outlinks.concat(parts[i] + " ");
+							outlinks = outlinks.concat(parts[i] + "\t");
 						}
 					}
 				}
 			}
 			sum = factor * sum + (1 - factor) / nCount;
 			sum = Math.round(sum * 100000.0) / 100000.0;
-			outputValue.set(String.valueOf(sum) + " " + outlinks);
+			outputValue.set(String.valueOf(sum) + "\t" + outlinks);
 			output.collect(key, outputValue);
 		}
 	}

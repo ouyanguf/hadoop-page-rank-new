@@ -23,7 +23,7 @@ public class SortRank extends Configured {
 			String line = value.toString();
 			String[] parts = line.split("[ \t]");
 			outputValue.set(parts[0]);
-                        outputKey.set(String.valueOf(100.0 - Double.valueOf(parts[1])));
+                        outputKey.set(String.valueOf(10.0 - Double.valueOf(parts[1])));
 			output.collect(outputKey, outputValue);
 		}
 	}
@@ -40,20 +40,19 @@ public class SortRank extends Configured {
 		public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, Text> output, Reporter reporter)
 			throws IOException {
 			while (values.hasNext()) {
-			//String line = values.next().toString();
-			double thekey = Math.round((100.0 - Double.valueOf(key.toString())) * 10000.0) / 10000.0;
-			Text newkey = new Text(String.valueOf(thekey));
-			//value.set(line);
-			//System.out.println(numOutput);
-                        if(numOutput >= 5/nCount) { //Number of displayed records
-			output.collect(values.next(),newkey);
-			numOutput++;
-			} else {
-			values.next();
-			//output.collect(empty, empty);
-			}
+		                //String line = values.next().toString();
+		                double thekey = Math.round((10.0 - Double.valueOf(key.toString())) * 10000.0) / 10000.0;
+		                Text newkey = new Text(String.valueOf(thekey));
+		                //value.set(line);
+                                if(numOutput >= 5/nCount) { //Number of displayed records
+		                        output.collect(values.next(),newkey);
+		                        numOutput++;
+		                } else {
+		                        values.next();
+			                //output.collect(empty, empty);
+			        }
 			
-		}
+		        }
 		}
 	}
 }

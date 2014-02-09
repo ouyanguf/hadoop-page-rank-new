@@ -1,0 +1,84 @@
+<mediawiki>
+  <page>
+    <title>A</title>
+    <ns>0</ns>
+    <id>20</id>
+    <redirect title="Afghan Armed Forces" />
+    <revision>
+      <id>558328133</id>
+      <parentid>74466354</parentid>
+      <timestamp>2013-06-04T18:45:03Z</timestamp>
+      <contributor>
+        <username>EmausBot</username>
+        <id>11292982</id>
+      </contributor>
+      <minor />
+      <comment>Robot: Fixing double redirect to [[Afghan Armed Forces]]</comment>
+      <text xml:space="preserve">#REDIRECT [[B]] [[C]] [[D]]</text>
+      <sha1>5wyohrt34mvtrpmqw9pjcgkw8sa46ma</sha1>
+      <model>wikitext</model>
+      <format>text/x-wiki</format>
+    </revision>
+  </page>
+  <page>
+    <title>B</title>
+    <ns>0</ns>
+    <id>21</id>
+    <redirect title="Foreign relations of Afghanistan" />
+    <revision>
+      <id>46448859</id>
+      <parentid>15898955</parentid>
+      <timestamp>2006-04-01T12:08:42Z</timestamp>
+      <contributor>
+        <username>Gurch</username>
+        <id>241822</id>
+      </contributor>
+      <minor />
+      <comment>{{R from CamelCase}}</comment>
+      <text xml:space="preserve">[[D]] [[C]]{{R from CamelCase}}</text>
+      <sha1>sj58bvvtvjqtwhjw5dzxo2yn1byhul1</sha1>
+      <model>wikitext</model>
+      <format>text/x-wiki</format>
+    </revision>
+  </page>
+  <page>
+    <title>E</title>
+    <ns>0</ns>
+    <id>23</id>
+    <redirect title="Assistive technology" />
+    <revision>
+      <id>74466798</id>
+      <parentid>15898957</parentid>
+      <timestamp>2006-09-08T04:17:00Z</timestamp>
+      <contributor>
+        <username>Rory096</username>
+        <id>750223</id>
+      </contributor>
+      <comment>cat rd</comment>
+      <text xml:space="preserve">#REDIRECT {{R from CamelCase}}</text>
+      <sha1>izyyjg1zanv4ett6ox75bxxq88owztd</sha1>
+      <model>wikitext</model>
+      <format>text/x-wiki</format>
+    </revision>
+  </page>
+  <page>
+    <title>C</title>
+    <ns>0</ns>
+    <id>24</id>
+    <redirect title="Amoeboid" />
+    <revision>
+      <id>74466889</id>
+      <parentid>15898958</parentid>
+      <timestamp>2006-09-08T04:17:51Z</timestamp>
+      <contributor>
+        <username>Rory096</username>
+        <id>750223</id>
+      </contributor>
+      <comment>cat rd</comment>
+      <text xml:space="preserve">#REDIRECT [[A]] [[B]] {{R from CamelCase}}</text>
+      <sha1>k84gqaug0izzy1ber1dq8bogr2a6txa</sha1>
+      <model>wikitext</model>
+      <format>text/x-wiki</format>
+    </revision>
+  </page>
+</mediawiki>

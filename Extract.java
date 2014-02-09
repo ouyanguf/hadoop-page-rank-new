@@ -1,11 +1,8 @@
-/**
- * @author: OU Yang & HAN Yahui
- */
-
 package PageRank;
 
 import java.io.*;
 import java.util.*;
+import java.util.ArrayList;
 
 import org.apache.hadoop.fs.*;
 import org.apache.hadoop.filecache.DistributedCache;
@@ -24,62 +21,94 @@ public class Extract extends Configured{
 		private String getTitle(String page){
 			int start = page.indexOf("<title>")+7;
 			int end = page.indexOf("</title>");
-			if(start>=end) return "NO_TITLE";
+			if(start>=end) return "";
 			String title = page.substring(start,end).replace(' ','_');
 			return title;
 		}
 
-		private String getOutlinks(String page){
-			StringBuilder outlinks = new StringBuilder();
-			HashSet<String> set = new HashSet<String>();
-			int textStart = page.indexOf("<text")+6;
+		private HashSet<String> getOutlinks(String page){
+			int textStart = page.indexOf("<text");
 			int textEnd = page.indexOf("</text>");
+			if(textStart < 0 || textEnd < 0) 
+				return null;	
+			String text = page.substring(textStart, textEnd);
+						
+			HashSet<String> outlinks = new HashSet<String>();
+			int start = 0;
 				
-			while(textStart<textEnd){
-				int linkStart = page.indexOf("[[",textStart)+2;
-				int linkEnd = page.indexOf("]]",linkStart);
-				
-				textStart = linkEnd + 2;//Update text start
-				
-				if(linkStart == 1 || linkEnd == -1) break; //No [[ or ]] found
-				
-				if(linkStart == linkEnd) continue;//no content between [[ and ]]
-
-				String link = page.substring(linkStart,linkEnd); //One link
-				if(link.contains(":") || link.contains("#"))	continue; //exclude invalid link
-				
-				int pipeIndex = link.indexOf("|");
-				if(pipeIndex == 0) continue;//no content before |
-				else if(pipeIndex != -1) link = link.substring(0,pipeIndex);//have pipe in the link
-				set.add(link.replace(" ","_"));
+			while(text.indexOf("[[", start)!=-1){
+				int linkStart = text.indexOf("[[", start) + 2;
+				int linkEnd = text.indexOf("]]",linkStart);
+				if(linkEnd < 0) break;
+				start = linkEnd+2;
+				String pLink = text.substring(linkStart, linkEnd);
+				int colonIndex = pLink.indexOf(":");
+				int sharpIndex = pLink.indexOf("#");
+				if(colonIndex == -1 && sharpIndex == -1) {
+					int pipeIndex = pLink.indexOf("|");
+					if(pipeIndex != -1) {
+						pLink = pLink.substring(0, pipeIndex);
+					}
+					outlinks.add( pLink.replace(' ','_') );
+				}
 			}
-			Iterator<String> it = set.iterator();
-			while(it.hasNext()){
-				outlinks.append(" " + it.next());
-			}
-			return outlinks.toString();
+			return outlinks;
 		}
 
 		public void map(LongWritable key, Text value, OutputCollector<Text, Text> output, Reporter reporter)
 		        throws IOException {
 		        String page = value.toString();
-			String title = getTitle(page);
-			String outlinks = getOutlinks(page);
-                        outputKey.set(title);
-                        outputValue.set("0.1"+outlinks);
-                        output.collect(outputKey, outputValue);
+				String title = getTitle(page);
+				//out put the title 
+				if(title.isEmpty())	return;
+                outputKey.set(title);
+                outputValue.set("!@#TITLE#@!");
+				output.collect(outputKey, outputValue);
+				
+				HashSet<String> outlinks = getOutlinks(page);
+				if(outlinks == null) return; 
+                outputValue.set(title);
+				for(String link : outlinks) {
+	                outputKey.set(link);
+	                output.collect(outputKey, outputValue);
+				}
 		}
 	}
 
 	public static class Reduce extends MapReduceBase implements Reducer<Text, Text, Text, Text> {
 
+		private Text outputKey = new Text();
+		private Text outputValue = new Text();
+		
 		public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, Text> output, Reporter reporter)
 			throws IOException {
-
+				// while (values.hasNext()) {
+// 			        Text value = values.next();
+// 					output.collect(key, value);
+// 				}
+								
+				boolean haveTitle = false;
+				ArrayList<String> links = new ArrayList<String>();
 		        while (values.hasNext()) {
-			        output.collect(key, values.next());
-			}
+			        String v = values.next().toString();
+					if(v.equals( "!@#TITLE#@!")) {
+						haveTitle = true;
+					} else {
+						links.add(v);
+					}
+				}
+				if(haveTitle == false) return;
+				
+				if(links.size() <= 0) { // has no links
+					output.collect(key, null);
+					return;	
+				}
+				
+				outputValue.set(key.toString());
+		        for (String link : links) {
+					outputKey.set(link);
+					output.collect(outputKey, outputValue);
+				}
 		}
 	}
-
 }

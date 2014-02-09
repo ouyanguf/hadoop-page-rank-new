@@ -10,38 +10,44 @@ import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.util.*;
 
-public class CountPages extends Configured {
-
+public class PreRank extends Configured {	
+	
 	public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, Text, Text> {
 
 		private Text outputKey = new Text();
 		private Text outputValue = new Text();
+		
+		private int N = 1;
+			
+		public void configure(JobConf job) {
+		    N = job.getInt("n.count", 1);
+		}
 
 		public void map(LongWritable key, Text value, OutputCollector<Text, Text> output, Reporter reporter)
 		        throws IOException {
-			outputKey.set("dummy_key");
-			outputValue.set("dummy_value");
+			String line = value.toString();
+			String[] parts = line.split("[ \t]");
+			
+			outputKey.set(parts[0]);
+			
+			StringBuilder sb = new StringBuilder();
+			double r = (double)1/N;
+			sb.append(String.valueOf(r));
+			for(int i = 1; i < parts.length; i++) {
+				sb.append("\t" + parts[i]);
+			}
+			
+			outputValue.set(sb.toString());
 			output.collect(outputKey, outputValue);
 		}
 	}
 
 	public static class Reduce extends MapReduceBase implements Reducer<Text, Text, Text, Text> {
-
-		private int n = 0;
-		private Text outputKey = new Text();
-		private Text outputValue = new Text();
 		
 		public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, Text> output, Reporter reporter)
 			throws IOException {
 
-			while (values.hasNext()) {
-				values.next();
-				n++;
-			}
-			
-            outputKey.set("N=" + String.valueOf(n));
-			outputValue.set("");
-            output.collect(outputKey, outputValue);
+            output.collect(key, values.next());
 		}
 	}
 }

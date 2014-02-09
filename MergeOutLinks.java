@@ -2,6 +2,7 @@ package PageRank;
 
 import java.io.*;
 import java.util.*;
+import java.util.ArrayList;
 
 import org.apache.hadoop.fs.*;
 import org.apache.hadoop.filecache.DistributedCache;
@@ -10,7 +11,7 @@ import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.util.*;
 
-public class CountPages extends Configured {
+public class MergeOutLinks extends Configured{
 
 	public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, Text, Text> {
 
@@ -19,29 +20,30 @@ public class CountPages extends Configured {
 
 		public void map(LongWritable key, Text value, OutputCollector<Text, Text> output, Reporter reporter)
 		        throws IOException {
-			outputKey.set("dummy_key");
-			outputValue.set("dummy_value");
-			output.collect(outputKey, outputValue);
+					String line = value.toString();
+					String[] parts = line.split("[ \t]");
+					if(parts.length <= 0) return;
+					outputKey.set(parts[0]);
+					if(parts.length > 1)
+						outputValue.set(parts[1]);
+					else 
+						outputValue.set("");
+					output.collect(outputKey, outputValue);
+					
 		}
 	}
 
 	public static class Reduce extends MapReduceBase implements Reducer<Text, Text, Text, Text> {
-
-		private int n = 0;
-		private Text outputKey = new Text();
 		private Text outputValue = new Text();
-		
 		public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, Text> output, Reporter reporter)
 			throws IOException {
-
-			while (values.hasNext()) {
-				values.next();
-				n++;
-			}
-			
-            outputKey.set("N=" + String.valueOf(n));
-			outputValue.set("");
-            output.collect(outputKey, outputValue);
+				StringBuilder outlinkString = new StringBuilder();
+				while (values.hasNext()) {
+					String v = values.next().toString()+"\t";
+					outlinkString.append(v);
+				}
+				outputValue.set(outlinkString.toString());
+				output.collect(key, outputValue);
 		}
 	}
 }
