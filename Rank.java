@@ -68,7 +68,7 @@ public class Rank extends Configured {
 	public static class Reduce extends MapReduceBase implements
 			Reducer<Text, Text, Text, Text> {
 
-		private double final factor = 0.85;
+		private final double factor = 0.85;
 		private int nCount = 1;
 		private Text outputValue = new Text();
 
