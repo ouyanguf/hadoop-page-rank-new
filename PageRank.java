@@ -2,6 +2,7 @@ package PageRank;
 
 import java.io.*;
 import java.util.*;
+import java.net.*;
 
 import org.apache.hadoop.fs.*;
 // import org.apache.hadoop.filecache.DistributedCache;
@@ -46,9 +47,11 @@ public class PageRank extends Configured implements Tool {
 		FileOutputFormat.setOutputPath(conf, outlinkPath);
 		JobClient.runJob(conf);
 		
+		int pathPrefixIndex = args[1].lastIndexOf('/');
+		String hdfsPrefix = (pathPrefixIndex < 0) ? "" : args[1].substring(0, pathPrefixIndex);
 		//Write job1 to results dir
-		FileSystem fs = FileSystem.get(conf);
-		FileUtil.copyMerge(fs, outlinkPath, fs,  new Path("results/PageRank.outlink.out"), false, conf, "");
+		FileSystem fs = FileSystem.get(URI.create(conf.get("fs.default.name")), conf); 
+		FileUtil.copyMerge(fs, outlinkPath, fs,  new Path(hdfsPrefix + "results/PageRank.outlink.out"), false, conf, "");
 
 		// Calculate N
 		Path nPath = new Path(args[1] + "-N");
@@ -64,8 +67,8 @@ public class PageRank extends Configured implements Tool {
 		FileOutputFormat.setOutputPath(conf, nPath);
 		JobClient.runJob(conf);
 
-		fs = FileSystem.get(conf);
-		FileUtil.copyMerge(fs, nPath, fs, new Path("results/PageRank.n.out"), false, conf, "");
+		fs = FileSystem.get(URI.create(conf.get("fs.default.name")), conf);
+		FileUtil.copyMerge(fs, nPath, fs, new Path(hdfsPrefix + "results/PageRank.n.out"), false, conf, "");
 		// Add Initial Rank
 		// get N
 		String nStr = new Scanner(new File(args[1] + "-N/part-00000")).useDelimiter("\\A").next();
@@ -95,8 +98,8 @@ public class PageRank extends Configured implements Tool {
 
 
 		for (int i = 1; i <= NUMBER_OF_ITERATIONS; i++) {
-			iterInPath = (i == 1) ? initRankPath : (new Path("outputOfIter-" + String.valueOf(i - 1)));
-			iterOutPath = new Path("outputOfIter-" + String.valueOf(i));
+			iterInPath = (i == 1) ? initRankPath : (new Path(args[1] + "outputOfIter-" + String.valueOf(i - 1)));
+			iterOutPath = new Path(args[1] + "outputOfIter-" + String.valueOf(i));
 			
 			conf = new JobConf(Rank.class);
 			conf.setJobName("Rank Iterations");
@@ -113,12 +116,9 @@ public class PageRank extends Configured implements Tool {
 			JobClient.runJob(conf);
 		}
 		
-		fs = FileSystem.get(conf);
-		FileUtil.copyMerge(fs, new Path("outputOfIter-1"), fs, new Path("results/PageRank.iter1.out"), false, conf, "");
-
-		//sort rank 
+		//sort rank of iteration 1
 		conf = new JobConf(SortRank.class);
-		conf.setJobName("SortRank");
+		conf.setJobName("SortRank iter 1");
 		conf.setMapperClass(SortRank.Map.class);
 		conf.setReducerClass(SortRank.Reduce.class);
 		conf.setOutputKeyClass(Text.class);
@@ -126,16 +126,33 @@ public class PageRank extends Configured implements Tool {
 		conf.setInputFormat(TextInputFormat.class);
 		conf.setOutputFormat(TextOutputFormat.class);
 		conf.setInt("n.count", N); // Use N Count
-		FileInputFormat.setInputPaths(conf,
-				new Path("outputOfIter-" + String.valueOf(NUMBER_OF_ITERATIONS)));
-		Path sortedRankOutPath = new Path(args[1] + "-Final-Sorted");
-		FileOutputFormat.setOutputPath(conf, sortedRankOutPath);
+		FileInputFormat.setInputPaths(conf, new Path(args[1] + "outputOfIter-1"));
+		Path sortedRankIter1OutPath = new Path(args[1] + "-Iter1-Sorted");
+		FileOutputFormat.setOutputPath(conf, sortedRankIter1OutPath);
+		JobClient.runJob(conf);
+		
+		fs = FileSystem.get(URI.create(conf.get("fs.default.name")), conf);
+		FileUtil.copyMerge(fs, sortedRankIter1OutPath, fs, new Path(hdfsPrefix + "results/PageRank.iter1.out"), false, conf, "");
+
+		//sort rank of iteration 8
+		conf = new JobConf(SortRank.class);
+		conf.setJobName("SortRank iter 8");
+		conf.setMapperClass(SortRank.Map.class);
+		conf.setReducerClass(SortRank.Reduce.class);
+		conf.setOutputKeyClass(Text.class);
+		conf.setOutputValueClass(Text.class);
+		conf.setInputFormat(TextInputFormat.class);
+		conf.setOutputFormat(TextOutputFormat.class);
+		conf.setInt("n.count", N); // Use N Count
+		FileInputFormat.setInputPaths(conf, new Path(args[1] + "outputOfIter-" + String.valueOf(NUMBER_OF_ITERATIONS)));
+		Path sortedRankIter8OutPath = new Path(args[1] + "-Iter8-Sorted");
+		FileOutputFormat.setOutputPath(conf, sortedRankIter8OutPath);
 		JobClient.runJob(conf);
 		// fs = FileSystem.get(conf);
 		// fs.delete(new Path("outputOfIter-"+String.valueOf(NUMBER_OF_ITERATIONS)),true);
 		
-		fs = FileSystem.get(conf);
-		FileUtil.copyMerge(fs, sortedRankOutPath, fs, new Path("results/PageRank.iter8.out"), false, conf, "");
+		fs = FileSystem.get(URI.create(conf.get("fs.default.name")), conf);
+		FileUtil.copyMerge(fs, sortedRankIter8OutPath, fs, new Path(hdfsPrefix + "results/PageRank.iter8.out"), false, conf, "");
 		
 		return 0;
 	}
