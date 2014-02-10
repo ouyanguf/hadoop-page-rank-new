@@ -92,7 +92,8 @@ public class PageRank extends Configured implements Tool {
 		Path iterInPath;
 		Path iterOutPath;
 		FileSystem fs;
-		int final NUMBER_OF_ITERATIONS = 8;
+		
+		final int NUMBER_OF_ITERATIONS = 8;
 
 		for (int i = 1; i <= NUMBER_OF_ITERATIONS; i++) {
 			iterInPath = (i == 1) ? initRankPath : (new Path("outputOfIter-"
