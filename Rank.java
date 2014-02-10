@@ -10,11 +10,14 @@ import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapred.*;
 import org.apache.hadoop.util.*;
 
-public class Rank extends Configured{
+public class Rank extends Configured {
 
-	public static class Map extends MapReduceBase implements Mapper<LongWritable, Text, Text, Text> {
+	public static class Map extends MapReduceBase implements
+			Mapper<LongWritable, Text, Text, Text> {
 
-		static enum Counters {INPUT_WORDS}
+		static enum Counters {
+			INPUT_WORDS
+		}
 
 		private Text outputKey = new Text();
 		private Text outputValue = new Text();
@@ -24,24 +27,25 @@ public class Rank extends Configured{
 		private int nCount = 1;
 
 		public void configure(JobConf job) {
-		        nCount = job.getInt("n.count", 1);
+			nCount = job.getInt("n.count", 1);
 		}
-		
-		public void map(LongWritable key, Text value, OutputCollector<Text, Text> output, Reporter reporter)
-		        throws IOException {
-				
+
+		public void map(LongWritable key, Text value,
+				OutputCollector<Text, Text> output, Reporter reporter)
+				throws IOException {
+
 			String line = value.toString(); // A Rank B C ...
 			String[] parts = line.split("[ \t]");
 
 			thisLink.set(parts[0]); // Extract A
-			
+
 			rank = Double.valueOf(parts[1]); // Extract Rank
-			
+
 			degree = parts.length - 2; // Calculate Degree
 
 			StringBuilder builder = new StringBuilder();
 			if (parts.length > 2) {
-			        for (int i = 2; i < parts.length; i++) {
+				for (int i = 2; i < parts.length; i++) {
 					builder.append(parts[i] + "\t");
 				}
 			}
@@ -49,9 +53,8 @@ public class Rank extends Configured{
 					+ builder.toString());
 			output.collect(thisLink, outputValue);
 
-			outputValue.set(thisLink.toString() + "\t"
-					+ String.valueOf(rank) + "\t"
-					+ String.valueOf(degree));
+			outputValue.set(thisLink.toString() + "\t" + String.valueOf(rank)
+					+ "\t" + String.valueOf(degree));
 			if (parts.length > 2) {
 				for (int i = 2; i < parts.length; i++) {
 					outputKey.set(parts[i]);
@@ -62,39 +65,41 @@ public class Rank extends Configured{
 		}
 	}
 
-	public static class Reduce extends MapReduceBase implements Reducer<Text, Text, Text, Text> {
+	public static class Reduce extends MapReduceBase implements
+			Reducer<Text, Text, Text, Text> {
 
-		private double factor = 0.85;
+		private double final factor = 0.85;
 		private int nCount = 1;
 		private Text outputValue = new Text();
-		
+
 		public void configure(JobConf job) {
-		        nCount = job.getInt("n.count", 1);
+			nCount = job.getInt("n.count", 1);
 		}
-		
-		public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, Text> output, Reporter reporter)
-			throws IOException {
+
+		public void reduce(Text key, Iterator<Text> values,
+				OutputCollector<Text, Text> output, Reporter reporter)
+				throws IOException {
 
 			double sum = 0.00;
-			String outlinks = "";
+			StringBuilder outlinks = new StringBuilder();
 
 			while (values.hasNext()) {
 				String line = values.next().toString();
 				String[] parts = line.split("[ \t]");
 
-				if (!parts[0].equals("!@#info#@!")) {//Not info message
+				if (!parts[0].equals("!@#info#@!")) {// Not info message
 					sum += Double.valueOf(parts[1]) / Double.valueOf(parts[2]);
 				} else { // Info message
 					if (parts.length > 2) {
 						for (int i = 2; i < parts.length; i++) {
-							outlinks = outlinks.concat(parts[i] + "\t");
+							outlinks.append(parts[i] + "\t");
 						}
 					}
 				}
 			}
 			sum = factor * sum + (1 - factor) / nCount;
-			sum = Math.round(sum * 100000.0) / 100000.0;
-			outputValue.set(String.valueOf(sum) + "\t" + outlinks);
+			//sum = Math.round(sum * 100000.0) / 100000.0;
+			outputValue.set(String.valueOf(sum) + "\t" + outlinks.toString());
 			output.collect(key, outputValue);
 		}
 	}

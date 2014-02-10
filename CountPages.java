@@ -18,7 +18,7 @@ public class CountPages extends Configured {
 		private Text outputValue = new Text();
 
 		public void map(LongWritable key, Text value, OutputCollector<Text, Text> output, Reporter reporter)
-		        throws IOException {
+				throws IOException {
 			outputKey.set("dummy_key");
 			outputValue.set("dummy_value");
 			output.collect(outputKey, outputValue);
@@ -30,18 +30,18 @@ public class CountPages extends Configured {
 		private int n = 0;
 		private Text outputKey = new Text();
 		private Text outputValue = new Text();
-		
+
 		public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, Text> output, Reporter reporter)
-			throws IOException {
+				throws IOException {
 
 			while (values.hasNext()) {
 				values.next();
 				n++;
 			}
-			
-            outputKey.set("N=" + String.valueOf(n));
+
+			outputKey.set("N=" + String.valueOf(n));
 			outputValue.set("");
-            output.collect(outputKey, outputValue);
+			output.collect(outputKey, outputValue);
 		}
 	}
 }
