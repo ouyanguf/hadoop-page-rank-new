@@ -127,12 +127,12 @@ public class PageRank extends Configured implements Tool {
 		conf.setOutputFormat(TextOutputFormat.class);
 		conf.setInt("n.count", N); // Use N Count
 		FileInputFormat.setInputPaths(conf,
-				new Path("outputOfIter-" + String.valueOf(numIter)));
+				new Path("outputOfIter-" + String.valueOf(NUMBER_OF_ITERATIONS)));
 		FileOutputFormat.setOutputPath(conf,
 				new Path(args[1] + "-Final-Sorted"));
 		JobClient.runJob(conf);
 		fs = FileSystem.get(conf);
-		// fs.delete(new Path("outputOfIter-"+String.valueOf(numIter)),true);
+		// fs.delete(new Path("outputOfIter-"+String.valueOf(NUMBER_OF_ITERATIONS)),true);
 
 		return 0;
 	}
