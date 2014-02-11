@@ -23,7 +23,7 @@ public class SortRank extends Configured {
 				throws IOException {
 
 			String line = value.toString();
-			String[] parts = line.split("[ \t]");
+			String[] parts = line.split("\\t");
 			outputValue.set(parts[0]);
 			outputKey.set(String.valueOf(1.0 - Double.valueOf(parts[1])));
 			output.collect(outputKey, outputValue);

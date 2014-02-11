@@ -28,7 +28,7 @@ public class PreRank extends Configured {
 				OutputCollector<Text, Text> output, Reporter reporter)
 				throws IOException {
 			String line = value.toString();
-			String[] parts = line.split("[ \t]");
+			String[] parts = line.split("\\t");
 
 			outputKey.set(parts[0]);
 
@@ -38,9 +38,10 @@ public class PreRank extends Configured {
 			for (int i = 1; i < parts.length; i++) {
 				sb.append("\t" + parts[i]);
 			}
-
 			outputValue.set(sb.toString());
-			output.collect(outputKey, outputValue);
+			
+			if(parts[0].length() > 0)
+				output.collect(outputKey, outputValue);
 		}
 	}
 
@@ -50,8 +51,8 @@ public class PreRank extends Configured {
 		public void reduce(Text key, Iterator<Text> values,
 				OutputCollector<Text, Text> output, Reporter reporter)
 				throws IOException {
-
-			output.collect(key, values.next());
+					// if((key!=null) && (key.toString().length() > 0))
+						output.collect(key, values.next());
 		}
 	}
 }

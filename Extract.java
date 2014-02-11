@@ -20,9 +20,11 @@ public class Extract extends Configured {
 		private Text outputValue = new Text();
 
 		private String getTitle(String page) {
-			int start = page.indexOf("<title>") + 7;
+			int start = page.indexOf("<title>");
+			if(start == -1) return "";
+			start += 7;
 			int end = page.indexOf("</title>");
-			if (start >= end)
+			if (end == -1)
 				return "";
 			String title = page.substring(start, end).replace(' ', '_');
 			return title;
@@ -52,7 +54,8 @@ public class Extract extends Configured {
 					if (pipeIndex != -1) {
 						pLink = pLink.substring(0, pipeIndex);
 					}
-					outlinks.add(pLink.replace(' ', '_'));
+					if(pLink.trim().length() > 0 ) 
+						outlinks.add(pLink.replace(' ', '_'));
 				}
 			}
 			return outlinks;
@@ -64,7 +67,7 @@ public class Extract extends Configured {
 			String page = value.toString();
 			String title = getTitle(page);
 			// out put the title
-			if (title.isEmpty())
+			if (title==null || title.isEmpty())
 				return;
 			outputKey.set(title);
 			outputValue.set("!@#TITLE#@!");

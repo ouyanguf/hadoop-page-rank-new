@@ -38,6 +38,8 @@ public class Rank extends Configured {
 			String[] parts = line.split("[ \t]");
 
 			thisLink.set(parts[0]); // Extract A
+			
+			if(parts[0].length() <= 0) return;
 
 			rank = Double.valueOf(parts[1]); // Extract Rank
 
@@ -46,11 +48,14 @@ public class Rank extends Configured {
 			StringBuilder builder = new StringBuilder();
 			if (parts.length > 2) {
 				for (int i = 2; i < parts.length; i++) {
-					builder.append(parts[i] + "\t");
+					builder.append(parts[i]);
+					if(i < parts.length-1) builder.append("\t");
 				}
 			}
-			outputValue.set("!@#info#@!\t" + String.valueOf(degree) + "\t"
-					+ builder.toString());
+			String v = "!@#info#@!\t" + String.valueOf(degree);
+			if(builder.toString().length() > 0)	
+				v += "\t" + builder.toString();
+			outputValue.set(v);
 			output.collect(thisLink, outputValue);
 
 			outputValue.set(thisLink.toString() + "\t" + String.valueOf(rank)
@@ -85,14 +90,15 @@ public class Rank extends Configured {
 
 			while (values.hasNext()) {
 				String line = values.next().toString();
-				String[] parts = line.split("[ \t]");
+				String[] parts = line.split("\\t");
 
 				if (!parts[0].equals("!@#info#@!")) {// Not info message
 					sum += Double.valueOf(parts[1]) / Double.valueOf(parts[2]);
 				} else { // Info message
 					if (parts.length > 2) {
 						for (int i = 2; i < parts.length; i++) {
-							outlinks.append(parts[i] + "\t");
+							outlinks.append(parts[i]);
+							if(i < parts.length-1) outlinks.append("\t");
 						}
 					}
 				}
@@ -100,7 +106,8 @@ public class Rank extends Configured {
 			sum = factor * sum + (1 - factor) / nCount;
 			//sum = Math.round(sum * 100000.0) / 100000.0;
 			outputValue.set(String.valueOf(sum) + "\t" + outlinks.toString());
-			output.collect(key, outputValue);
+			if((key!=null) && (key.toString().length() > 0))
+				output.collect(key, outputValue);
 		}
 	}
 

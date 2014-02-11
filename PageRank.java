@@ -48,7 +48,8 @@ public class PageRank extends Configured implements Tool {
 		JobClient.runJob(conf);
 		
 		//Write job1 to results dir
-		FileSystem fs = FileSystem.get(URI.create(conf.get("fs.default.name")), conf); 
+		//FileSystem infs = FileSystem.get(URI.create(conf.get("fs.default.name")), conf); 
+		FileSystem fs = outlinkPath.getFileSystem(conf);
 		FileUtil.copyMerge(fs, outlinkPath, fs,  new Path(args[1] + "/PageRank.outlink.out"), false, conf, "");
 
 		// Calculate N
@@ -65,7 +66,7 @@ public class PageRank extends Configured implements Tool {
 		FileOutputFormat.setOutputPath(conf, nPath);
 		JobClient.runJob(conf);
 
-		fs = FileSystem.get(URI.create(conf.get("fs.default.name")), conf);
+		fs = nPath.getFileSystem(conf);
 		FileUtil.copyMerge(fs, nPath, fs, new Path(args[1] + "/PageRank.n.out"), false, conf, "");
 		// Add Initial Rank
 		// get N
@@ -129,7 +130,7 @@ public class PageRank extends Configured implements Tool {
 		FileOutputFormat.setOutputPath(conf, sortedRankIter1OutPath);
 		JobClient.runJob(conf);
 		
-		fs = FileSystem.get(URI.create(conf.get("fs.default.name")), conf);
+		fs = sortedRankIter1OutPath.getFileSystem(conf);
 		FileUtil.copyMerge(fs, sortedRankIter1OutPath, fs, new Path(args[1] + "/PageRank.iter1.out"), false, conf, "");
 
 		//sort rank of iteration 8
@@ -149,7 +150,7 @@ public class PageRank extends Configured implements Tool {
 		// fs = FileSystem.get(conf);
 		// fs.delete(new Path("outputOfIter-"+String.valueOf(NUMBER_OF_ITERATIONS)),true);
 		
-		fs = FileSystem.get(URI.create(conf.get("fs.default.name")), conf);
+		fs = sortedRankIter8OutPath.getFileSystem(conf);
 		FileUtil.copyMerge(fs, sortedRankIter8OutPath, fs, new Path(args[1] + "/PageRank.iter8.out"), false, conf, "");
 		
 		return 0;

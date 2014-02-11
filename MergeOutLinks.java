@@ -21,7 +21,7 @@ public class MergeOutLinks extends Configured {
 		public void map(LongWritable key, Text value, OutputCollector<Text, Text> output, Reporter reporter)
 				throws IOException {
 			String line = value.toString();
-			String[] parts = line.split("[ \t]");
+			String[] parts = line.split("\\t");
 			if (parts.length <= 0)
 				return;
 			outputKey.set(parts[0]);
@@ -41,8 +41,9 @@ public class MergeOutLinks extends Configured {
 				throws IOException {
 			StringBuilder outlinkString = new StringBuilder();
 			while (values.hasNext()) {
-				String v = values.next().toString() + "\t";
-				outlinkString.append(v);
+				outlinkString.append(values.next().toString());
+				if(values.hasNext())
+					outlinkString.append("\t");
 			}
 			outputValue.set(outlinkString.toString());
 			output.collect(key, outputValue);
