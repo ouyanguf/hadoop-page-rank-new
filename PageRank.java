@@ -17,8 +17,8 @@ public class PageRank extends Configured implements Tool {
 	
 	public int run(String[] args) throws Exception {
 		// Extract links and remove red nodes
-		// final String DATA_URL = "s3://spring-2014-ds/data";
-		final String DATA_URL = "s3://yahui-dic-pagerank/input";
+		final String DATA_URL = "s3://spring-2014-ds/data";
+		// final String DATA_URL = "s3://yahui-dic-pagerank/input";
 		final String PATH_PRE = "s3://" + args[0] + "/";
 		
 		Path xmlPath = new Path(DATA_URL);
