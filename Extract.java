@@ -49,8 +49,8 @@ public class Extract extends Configured {
 				String pLink = text.substring(linkStart, linkEnd);
 				int colonIndex = pLink.indexOf(":");
 				int sharpIndex = pLink.indexOf("#");
-				int slashIndex = pLink.indexOf("/");
-				if (colonIndex == -1 && sharpIndex == -1 && slashIndex==-1) {
+				// int slashIndex = pLink.indexOf("/");
+				if (colonIndex == -1 && sharpIndex == -1) {
 					int pipeIndex = pLink.indexOf("|");
 					if (pipeIndex != -1) {
 						pLink = pLink.substring(0, pipeIndex);
