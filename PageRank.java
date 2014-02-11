@@ -14,11 +14,15 @@ import org.apache.hadoop.mapred.lib.*;
 import org.apache.hadoop.fs.FileUtil;
 
 public class PageRank extends Configured implements Tool {
-
+	
 	public int run(String[] args) throws Exception {
 		// Extract links and remove red nodes
-		Path xmlPath = new Path(args[0]);
-		Path rawlinkPath = new Path(args[1] + "/../tmp/raw-link");
+		// final String DATA_URL = "s3://spring-2014-ds/data";
+		final String DATA_URL = "s3://yahui-dic-pagerank/input";
+		final String PATH_PRE = "s3://" + args[0] + "/";
+		
+		Path xmlPath = new Path(DATA_URL);
+		Path rawlinkPath = new Path(PATH_PRE + "tmp/raw-link");
 		JobConf conf = new JobConf(Extract.class);
 		conf.setJobName("ExtractInfo");
 		conf.setMapperClass(Extract.Map.class);
@@ -34,7 +38,7 @@ public class PageRank extends Configured implements Tool {
 		JobClient.runJob(conf);
 
 		// Merge outlinks
-		Path outlinkPath = new Path(args[1] + "/../tmp/out-link");
+		Path outlinkPath = new Path(PATH_PRE + "tmp/out-link");
 		conf = new JobConf(MergeOutLinks.class);
 		conf.setJobName("Mergeoutlink");
 		conf.setMapperClass(MergeOutLinks.Map.class);
@@ -50,10 +54,10 @@ public class PageRank extends Configured implements Tool {
 		//Write job1 to results dir
 		//FileSystem infs = FileSystem.get(URI.create(conf.get("fs.default.name")), conf); 
 		FileSystem fs = outlinkPath.getFileSystem(conf);
-		FileUtil.copyMerge(fs, outlinkPath, fs,  new Path(args[1] + "/PageRank.outlink.out"), false, conf, "");
+		FileUtil.copyMerge(fs, outlinkPath, fs,  new Path(PATH_PRE + "results/PageRank.outlink.out"), false, conf, "");
 
 		// Calculate N
-		Path nPath = new Path(args[1] + "/../tmp/number");
+		Path nPath = new Path(PATH_PRE + "tmp/number");
 		conf = new JobConf(CountPages.class);
 		conf.setJobName("CountPages");
 		conf.setMapperClass(CountPages.Map.class);
@@ -67,15 +71,19 @@ public class PageRank extends Configured implements Tool {
 		JobClient.runJob(conf);
 
 		fs = nPath.getFileSystem(conf);
-		FileUtil.copyMerge(fs, nPath, fs, new Path(args[1] + "/PageRank.n.out"), false, conf, "");
+		FileUtil.copyMerge(fs, nPath, fs, new Path(PATH_PRE + "results/PageRank.n.out"), false, conf, "");
 		// Add Initial Rank
 		// get N
-		String nStr = new Scanner(new File(args[1] + "/../tmp/number/part-00000")).useDelimiter("\\A").next();
-		String[] parts = nStr.split("[ \t]");
-		nStr = parts[0].substring(2, parts[0].length());
-		int N = Integer.valueOf(nStr);
+		// String nStr = new Scanner(new File(args[1] + "/PageRank.n.out")).useDelimiter("\\A").next();
+	// 	String[] parts = nStr.split("[ \t]");
+	// 	nStr = parts[0].substring(2, parts[0].length());
+   	 	Scanner scanner = new Scanner(fs.open(new Path(PATH_PRE + "results/PageRank.n.out")));
+        int N = Integer.parseInt(scanner.nextLine().trim().substring(2));
+        // System.out.println("total pages: " + N);
+        scanner.close();
+		// int N = Integer.valueOf(nStr);
 
-		Path initRankPath = new Path(args[1] + "/../tmp/preRank");
+		Path initRankPath = new Path(PATH_PRE + "tmp/preRank");
 		conf = new JobConf(PreRank.class);
 		conf.setJobName("Add_Initial_Rank");
 		conf.setMapperClass(PreRank.Map.class);
@@ -97,8 +105,8 @@ public class PageRank extends Configured implements Tool {
 
 
 		for (int i = 1; i <= NUMBER_OF_ITERATIONS; i++) {
-			iterInPath = (i == 1) ? initRankPath : (new Path(args[1] + "/../tmp/outputOfIter-" + String.valueOf(i - 1)));
-			iterOutPath = new Path(args[1] + "/../tmp/outputOfIter-" + String.valueOf(i));
+			iterInPath = (i == 1) ? initRankPath : (new Path(PATH_PRE + "tmp/outputOfIter-" + String.valueOf(i - 1)));
+			iterOutPath = new Path(PATH_PRE + "tmp/outputOfIter-" + String.valueOf(i));
 			
 			conf = new JobConf(Rank.class);
 			conf.setJobName("Rank Iterations");
@@ -125,13 +133,13 @@ public class PageRank extends Configured implements Tool {
 		conf.setInputFormat(TextInputFormat.class);
 		conf.setOutputFormat(TextOutputFormat.class);
 		conf.setInt("n.count", N); // Use N Count
-		FileInputFormat.setInputPaths(conf, new Path(args[1] + "/../tmp/outputOfIter-1"));
-		Path sortedRankIter1OutPath = new Path(args[1] + "/../tmp/rank-iter1-Sorted");
+		FileInputFormat.setInputPaths(conf, new Path(PATH_PRE + "tmp/outputOfIter-1"));
+		Path sortedRankIter1OutPath = new Path(PATH_PRE + "tmp/rank-iter1-Sorted");
 		FileOutputFormat.setOutputPath(conf, sortedRankIter1OutPath);
 		JobClient.runJob(conf);
 		
 		fs = sortedRankIter1OutPath.getFileSystem(conf);
-		FileUtil.copyMerge(fs, sortedRankIter1OutPath, fs, new Path(args[1] + "/PageRank.iter1.out"), false, conf, "");
+		FileUtil.copyMerge(fs, sortedRankIter1OutPath, fs, new Path(PATH_PRE + "results/PageRank.iter1.out"), false, conf, "");
 
 		//sort rank of iteration 8
 		conf = new JobConf(SortRank.class);
@@ -143,15 +151,15 @@ public class PageRank extends Configured implements Tool {
 		conf.setInputFormat(TextInputFormat.class);
 		conf.setOutputFormat(TextOutputFormat.class);
 		conf.setInt("n.count", N); // Use N Count
-		FileInputFormat.setInputPaths(conf, new Path(args[1] + "/../tmp/outputOfIter-" + String.valueOf(NUMBER_OF_ITERATIONS)));
-		Path sortedRankIter8OutPath = new Path(args[1] + "/../tmp/rank-iter8-Sorted");
+		FileInputFormat.setInputPaths(conf, new Path(PATH_PRE + "tmp/outputOfIter-" + String.valueOf(NUMBER_OF_ITERATIONS)));
+		Path sortedRankIter8OutPath = new Path(PATH_PRE + "tmp/rank-iter8-Sorted");
 		FileOutputFormat.setOutputPath(conf, sortedRankIter8OutPath);
 		JobClient.runJob(conf);
 		// fs = FileSystem.get(conf);
 		// fs.delete(new Path("outputOfIter-"+String.valueOf(NUMBER_OF_ITERATIONS)),true);
 		
 		fs = sortedRankIter8OutPath.getFileSystem(conf);
-		FileUtil.copyMerge(fs, sortedRankIter8OutPath, fs, new Path(args[1] + "/PageRank.iter8.out"), false, conf, "");
+		FileUtil.copyMerge(fs, sortedRankIter8OutPath, fs, new Path(PATH_PRE + "results/PageRank.iter8.out"), false, conf, "");
 		
 		return 0;
 	}
