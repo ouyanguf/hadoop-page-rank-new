@@ -1,0 +1,43 @@
+Data Intensive Computing 
+Project 1 -- Page Rank
+Names: Yahui Han (4144-2945), Yang Ou (2012-6327)
+contacts: {yahan, you}@cise.ufl.edu
+
+This is a great project enabling us to play around with hadoop and familirize ourselves with AWS cloud computing, and also an interesting one. 
+
+I. How we develop the code.
+After reading the project description, we started learning Hadoop tutorials from AWS, and set up a local hadoop environment. We tested a Hello World project -- word count both in local machine and AWS. Then we use a tiny dataset to develop the page rank program on our local machine. After the clarification and correction of project, we started design our project. 
+
+Job1: to extract a ariticle relation graph with red link removed, we have to use two MapReduce jobs to accomplish this. First one is to extract the title and the links from the xml file, and remove the red link. Second one is to aggregate the links together. Removing red link is worthy mention, here is a example to illustrate this.
+
+Suppose the following article relation graph:
+
+A -> B C D
+B -> D C
+E
+C -> A B
+
+The MR extracts the link and collect revers link, which is <B, A>, <C, A>, <D, A>, <A, "TITLE">, <D, B>, <C, B>, <B, "TITLE">, <E, "TITLE">, <A, C>, <B, C>, <C, "TITLE">.
+The Second MR's reduce work will collect those that have a "TITLE" within its iteration values, for D in this example, we just ignore it, and then we reverse it into a final list. 
+
+Job 2: count the number of titles.
+After remove the red links, the line number is the total number of nodes, pretty simple.
+
+Job 3: Produce Page Rank
+To simplify the code, we did a PreRank job to add the initial 1/N rank after each title, followed by 8 iteration of the Page Rank algorithm. The difficult is to populate the number N to every map and reduce workers that use it. This is completed by passing a variable to the configuration of this MR job. 
+
+Job 4: Sort the rank
+We know that the hadoop will sort the <key, value> pair by the key, so in Map, we collect a <rank, title> pair, and in reducer, all the pairs are sorted by rank, so we just output them. 
+
+Another difficulty is to merge the part results into one file. Thanks for the discussion in piazza. 
+
+II. How to run the code.
+We uploaded our files into S3 with bucket name "ou-han-dic". It is still there. I am not sure wether we should provide a bucket for TA for run the grading script or TA will specify one himself, but here is one that could work "ou-han-dic-pr".
+
+III. The team work.
+We did this project in a group of two. Yahui Han was dealing with the first two jobs, extract the links, remove the red links and count the number of titles, and test the project on AWS. Yang Ou was in charge of the PageRank algorithm and sort the results. 
+
+IV. What we learnt from this project.
+We enjoyed this project, as we are exposed the big data and cloud computing. We learned how to design and program in hadoop and how to set up a work flow in AWS. We also experienced the benefit of discussion and the spirit of team work. 
+
+Great thanks to Professor Wang, and Kun Li for designing this great project. And thanks to DIC class as we are in the process of learning art-to-state technology. 
